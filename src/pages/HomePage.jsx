@@ -1,11 +1,12 @@
-import AnimalCard from '../components/AnimalCard.jsx'
 import { animals } from '../data/animals.js'
+import Section from '../components/ui/Section.jsx'
+import CatalogSummary from '../components/animals/CatalogSummary.jsx'
+import AnimalList from '../components/animals/AnimalList.jsx'
 
 export default function HomePage() {
   return (
     <>
-      <section id="about" aria-labelledby="about-title">
-        <h1 id="about-title">Система контролю та опіки тварин</h1>
+      <Section id="about" title="Про застосунок">
         <p>
           Це вебсайт для реєстру та підтримки бездомних тварин
           студентського містечка: тут зібрана інформація про те, які
@@ -13,23 +14,12 @@ export default function HomePage() {
           вони допомоги просто зараз.
         </p>
         <p>Перегляньте реєстр тварин та їхній поточний статус.</p>
-      </section>
+      </Section>
 
-      <section id="catalog" aria-labelledby="catalog-title">
-        <h2 id="catalog-title">Тварини кампусу</h2>
-        <p>Тварин у реєстрі: {animals.length}</p>
-        {animals.length === 0 ? (
-          <p>Тварин ще не додано до реєстру.</p>
-        ) : (
-          <ul className="animal-grid">
-            {animals.map((item) => (
-              <li key={item.id}>
-                <AnimalCard item={item} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <Section id="catalog" title="Тварини кампусу">
+        <CatalogSummary total={animals.length} />
+        <AnimalList items={animals} />
+      </Section>
     </>
   )
 }
