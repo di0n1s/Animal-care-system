@@ -1,6 +1,7 @@
 import AppLayout from './components/layout/AppLayout.jsx'
-import HomePage from './pages/HomePage.jsx'
-import CareRequestPage from './pages/CareRequestPage.jsx'
+import AnimalSelectionProvider from './providers/AnimalSelectionProvider.jsx'
+import CatalogContainer from './pages/CatalogContainer.jsx'
+import CareRequestContainer from './pages/CareRequestContainer.jsx'
 import { animals } from './data/animals.js'
 
 const navigationLinks = [
@@ -10,12 +11,12 @@ const navigationLinks = [
 ]
 
 export default function App() {
-  const exampleAnimal = animals.find((item) => item.id === 'an-001')
-
   return (
     <AppLayout title="Система контролю та опіки тварин" links={navigationLinks}>
-      <HomePage />
-      <CareRequestPage item={exampleAnimal} />
+      <AnimalSelectionProvider items={animals}>
+        <CatalogContainer items={animals} />
+        <CareRequestContainer />
+      </AnimalSelectionProvider>
     </AppLayout>
   )
 }
