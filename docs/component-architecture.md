@@ -128,3 +128,56 @@ App
 Redux/MobX/Zustand не використовувались — для цього обсягу стану вистачає
 `useState`, підняття стану й обмеженого Context API.
 
+
+## 7. Маршрутизація (Л 2.2)
+
+### Дерево маршрутного вмісту
+
+```
+AppLayout (Outlet, AnimalSelectionProvider)
+  Головна (/)
+  Реєстр тварин (/animals)
+  Деталі тварини (/animals/:animalId)
+  RequestsLayout (/requests, свій Outlet)
+    Список заявок (index)
+    Нова заявка (/requests/new)
+    Редагування заявки (/requests/:requestId/edit)
+  Сторінка 404 (*)
+```
+
+`AppLayout` не має власного `path` — він задає лише спільне компонування
+(шапку, меню, `AnimalSelectionProvider`) для всіх дочірніх маршрутів через
+`Outlet`. `RequestsLayout` додає другий рівень `Outlet` лише там, де потрібне
+власне меню розділу (список/нова заявка).
+
+### Де тепер живе стан після Л 2.1
+
+| Значення | Було в Л 2.1 | Стало в Л 2.2 |
+|---|---|---|
+| Відкрита сторінка | Всі секції змонтовані одночасно | Шлях URL (`Routes`/`Route`) |
+| Пошук і фільтр `needsCare` | `useState` у хуку `useAnimalFilters` | Query parameters (`useSearchParams`), той самий контракт хука |
+| Тварина для нової заявки | Тільки Context API | `?animalId=` у query — читається напряму, не копіюється в контекст |
+| Останній явний вибір (підсвітка картки) | Context API | Залишається Context API (`AnimalSelectionProvider`) |
+| Чернетка форми, розгортання опису | Локальний `useState` | Без змін — локальний `useState`, скидається при демонтуванні |
+| Заголовок вкладки | `useEffect` у `CareRequestPage` | Перенесено в спільний `PageHeading`, викликається кожною сторінкою |
+
+Пряме відкриття `/animals?q=соня` чи `/requests/req-001/edit` відновлює
+потрібний стан з адреси без участі Context API — це навмисно різні механізми:
+контекст пам'ятає **останню дію користувача**, URL визначає **поточну
+сторінку**.
+
+### Контракти нових компонентів
+
+| Компонент | Вхідні властивості | Домовленість |
+|---|---|---|
+| `PageHeading` | `title` | Єдиний власник `document.title` для відкритої сторінки |
+| `AnimalListPage` | `items`, `selectedId`, `onSelect` | Колишній вміст каталогу з `HomePage`, тепер окрема адреса |
+| `AnimalDetailsPage` | `items` | Читає `animalId` через `useParams`, показує `NotFoundPage` за відсутності |
+| `RequestsLayout` | — (`Outlet`) | Власне меню розділу заявок, без нового провайдера |
+| `CareRequestPage` | `title`, `item`, `initialDraft`, `onCancel`, `cancelLabel` | Спільний редактор; `item` завжди коректний — перевірку виконує маршрутна сторінка |
+| `CareRequestCreatePage` | `items` | Читає `animalId` з query; без параметра показує `EmptyState` |
+| `CareRequestEditPage` | `requests`, `items` | Читає `requestId` через `useParams`; подвійна перевірка (заявка → тварина) |
+| `NotFoundPage` | `title`, `message` (необов'язкові) | Один компонент для невідомого маршруту й відсутнього запису |
+
+`CareRequestContainer` з Л 2.1 видалено — його роль тепер виконують
+`CareRequestCreatePage` і `CareRequestEditPage` з явними адресами.

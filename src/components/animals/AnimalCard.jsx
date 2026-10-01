@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import CareStatusBadge from './CareStatusBadge.jsx'
 import AppButton from '../ui/AppButton.jsx'
 
@@ -8,7 +9,11 @@ export default function AnimalCard({ item, selected, onSelect }) {
 
   return (
     <article className="animal-card">
-      <h3>{item.name}</h3>
+      <h3>
+        <Link to={`/animals/${encodeURIComponent(item.id)}`}>
+          {item.name}
+        </Link>
+      </h3>
       <p className="species">{item.species} · {item.area}</p>
       <p><CareStatusBadge needsCare={item.needsCare} /></p>
 

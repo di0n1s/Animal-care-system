@@ -1,11 +1,11 @@
-import HomePage from './HomePage.jsx'
+import AnimalListPage from './AnimalListPage.jsx'
 import useAnimalSelection from '../hooks/useAnimalSelection.js'
 
 export default function CatalogContainer({ items }) {
   const { selectedId, selectAnimal } = useAnimalSelection()
 
   return (
-    <HomePage
+    <AnimalListPage
       items={items}
       selectedId={selectedId}
       onSelect={selectAnimal}

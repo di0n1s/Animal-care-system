@@ -1,22 +1,44 @@
+import { Route, Routes } from 'react-router'
 import AppLayout from './components/layout/AppLayout.jsx'
-import AnimalSelectionProvider from './providers/AnimalSelectionProvider.jsx'
+import RequestsLayout from './components/layout/RequestsLayout.jsx'
+import HomePage from './pages/HomePage.jsx'
 import CatalogContainer from './pages/CatalogContainer.jsx'
-import CareRequestContainer from './pages/CareRequestContainer.jsx'
+import AnimalDetailsPage from './pages/AnimalDetailsPage.jsx'
+import RequestsPage from './pages/RequestsPage.jsx'
+import CareRequestCreatePage from './pages/CareRequestCreatePage.jsx'
+import CareRequestEditPage from './pages/CareRequestEditPage.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 import { animals } from './data/animals.js'
-
-const navigationLinks = [
-  { href: '#about', label: 'Про застосунок' },
-  { href: '#catalog', label: 'Реєстр тварин' },
-  { href: '#request', label: 'Заявка на догляд' },
-]
+import { careRequests } from './data/careRequests.js'
 
 export default function App() {
   return (
-    <AppLayout title="Система контролю та опіки тварин" links={navigationLinks}>
-      <AnimalSelectionProvider items={animals}>
-        <CatalogContainer items={animals} />
-        <CareRequestContainer />
-      </AnimalSelectionProvider>
-    </AppLayout>
+    <Routes>
+      <Route element={<AppLayout items={animals} />}>
+        <Route index element={<HomePage />} />
+
+        <Route path="animals">
+          <Route index element={<CatalogContainer items={animals} />} />
+          <Route
+            path=":animalId"
+            element={<AnimalDetailsPage items={animals} />}
+          />
+        </Route>
+
+        <Route path="requests" element={<RequestsLayout />}>
+          <Route
+            index
+            element={<RequestsPage requests={careRequests} items={animals} />}
+          />
+          <Route path="new" element={<CareRequestCreatePage items={animals} />} />
+          <Route
+            path=":requestId/edit"
+            element={<CareRequestEditPage requests={careRequests} items={animals} />}
+          />
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   )
 }

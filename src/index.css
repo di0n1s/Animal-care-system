@@ -111,3 +111,20 @@ button[aria-pressed="true"] {
   outline: 2px solid #172b3a;
   outline-offset: 3px;
 }
+
+.site-title { font-size: 1.5rem; font-weight: 700; }
+.nav-link { display: inline-block; padding: 0.25rem 0.5rem; }
+.nav-list a[aria-current="page"] {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+.table-scroll { overflow-x: auto; }
+.requests-table { width: 100%; border-collapse: collapse; }
+.requests-table th, .requests-table td {
+  padding: 0.625rem;
+  border: 1px solid #c7d2dc;
+  text-align: left;
+  vertical-align: top;
+}
+.requests-table caption { text-align: left; margin-block: 0.75rem; }
