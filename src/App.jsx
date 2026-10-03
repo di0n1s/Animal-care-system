@@ -6,10 +6,10 @@ import CatalogContainer from './pages/CatalogContainer.jsx'
 import AnimalDetailsPage from './pages/AnimalDetailsPage.jsx'
 import RequestsPage from './pages/RequestsPage.jsx'
 import CareRequestCreatePage from './pages/CareRequestCreatePage.jsx'
+import CareRequestDetailsPage from './pages/CareRequestDetailsPage.jsx'
 import CareRequestEditPage from './pages/CareRequestEditPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import { animals } from './data/animals.js'
-import { careRequests } from './data/careRequests.js'
 
 export default function App() {
   return (
@@ -26,14 +26,15 @@ export default function App() {
         </Route>
 
         <Route path="requests" element={<RequestsLayout />}>
-          <Route
-            index
-            element={<RequestsPage requests={careRequests} items={animals} />}
-          />
+          <Route index element={<RequestsPage items={animals} />} />
           <Route path="new" element={<CareRequestCreatePage items={animals} />} />
           <Route
+            path=":requestId"
+            element={<CareRequestDetailsPage items={animals} />}
+          />
+          <Route
             path=":requestId/edit"
-            element={<CareRequestEditPage requests={careRequests} items={animals} />}
+            element={<CareRequestEditPage items={animals} />}
           />
         </Route>
 

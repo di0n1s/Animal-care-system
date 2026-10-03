@@ -9,10 +9,12 @@ export default function CareRequestSummary({ animalName, draft }) {
         <dd>{animalName}</dd>
         <dt>Графік догляду</dt>
         <dd>{schedule || 'Ще не вказано'}</dd>
+        <dt>Візитів на тиждень</dt>
+        <dd>{draft.visitsPerWeek === '' ? 'Ще не вказано' : draft.visitsPerWeek}</dd>
         <dt>Додаткові матеріали</dt>
         <dd>{draft.needsSupplies ? 'Потрібні' : 'Не потрібні'}</dd>
       </dl>
-      <p>Цей підсумок не підтверджує опіку.</p>
+      <p>Це підсумок введеного, а не підтвердження збереження чи опіки.</p>
     </aside>
   )
 }

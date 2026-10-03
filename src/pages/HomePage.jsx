@@ -11,7 +11,7 @@ export default function HomePage() {
       </p>
       <p>Перегляньте тварин і підготуйте чернетку заявки на догляд.</p>
       <p><Link to="/animals">Перейти до реєстру тварин</Link></p>
-      <p><Link to="/requests">Переглянути демонстраційні заявки</Link></p>
+      <p><Link to="/requests">Переглянути заявки</Link></p>
     </>
   )
 }

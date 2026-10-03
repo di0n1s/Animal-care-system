@@ -5,65 +5,110 @@ export default function CareRequestForm({
   idPrefix,
   animalName,
   draft,
-  onScheduleChange,
-  onNeedsSuppliesChange,
+  errors,
+  operationError,
+  onChange,
+  onBlur,
+  onSubmit,
   onReset,
+  submitLabel,
 }) {
-  const nameId = `${idPrefix}-name`
   const scheduleId = `${idPrefix}-schedule`
-  const noticeId = `${idPrefix}-notice`
+  const visitsId = `${idPrefix}-visits`
+  const suppliesId = `${idPrefix}-supplies`
+  const hasErrors = Object.keys(errors).length > 0
+
+  function describedBy(id, error) {
+    return `${id}-hint${error ? ` ${id}-error` : ''}`
+  }
+
+  // Клік по кнопці не забирає фокус у поля: інакше onBlur показує помилку,
+  // розмітка зсувається, і перший клік по кнопці губиться.
+  function keepFieldFocus(event) {
+    if (event.target.closest('button')) event.preventDefault()
+  }
 
   return (
-    <form
-      aria-label="Чернетка заявки на догляд"
-      aria-describedby={noticeId}
-      onSubmit={(event) => event.preventDefault()}
-    >
-      <p id={noticeId}>
-        Зміни не зберігаються. Чернетка скидається при виході зі сторінки,
-        зміні тварини чи запису або перезавантаженні. Надсилання ще
-        недоступне.
+    <form noValidate onSubmit={onSubmit} aria-label="Форма заявки на догляд">
+      <p>Тварина: {animalName}</p>
+      <p>
+        Збережіть зміни кнопкою нижче. Незбережене введення зникає
+        при виході зі сторінки або її перезавантаженні.
       </p>
-
-      <FormField id={nameId} label="Тварина">
-        <input
-          id={nameId}
-          name="animalName"
-          value={animalName}
-          readOnly
-        />
-      </FormField>
+      {hasErrors && <p role="alert">Виправте позначені поля.</p>}
+      {errors.animalId && <p role="alert">{errors.animalId}</p>}
+      {operationError && <p role="alert">{operationError}</p>}
 
       <FormField
         id={scheduleId}
-        label="Бажаний графік догляду"
-        hint="Опишіть, коли й як часто ви можете піклуватися про тварину."
+        label="Бажаний графік догляду (обов'язково)"
+        hint="Від 10 до 500 символів без крайніх пробілів."
+        error={errors.schedule}
       >
         <textarea
           id={scheduleId}
           name="schedule"
           rows={3}
+          required
           value={draft.schedule}
-          onChange={(event) => onScheduleChange(event.target.value)}
-          aria-describedby={`${scheduleId}-hint`}
+          onChange={(event) => onChange('schedule', event.target.value)}
+          onBlur={() => onBlur('schedule')}
+          aria-invalid={Boolean(errors.schedule)}
+          aria-describedby={describedBy(scheduleId, errors.schedule)}
         />
       </FormField>
 
-      <label className="checkbox-field">
+      <FormField
+        id={visitsId}
+        label="Візитів на тиждень (обов'язково)"
+        hint="Ціле число від 1 до 7."
+        error={errors.visitsPerWeek}
+      >
         <input
-          name="needsSupplies"
-          type="checkbox"
-          checked={draft.needsSupplies}
-          onChange={(event) => onNeedsSuppliesChange(event.target.checked)}
+          id={visitsId}
+          name="visitsPerWeek"
+          type="number"
+          min={1}
+          max={7}
+          step={1}
+          required
+          value={draft.visitsPerWeek}
+          onChange={(event) => onChange('visitsPerWeek', event.target.value)}
+          onBlur={() => onBlur('visitsPerWeek')}
+          aria-invalid={Boolean(errors.visitsPerWeek)}
+          aria-describedby={describedBy(visitsId, errors.visitsPerWeek)}
         />
-        Потрібна допомога з кормом чи ліками
-      </label>
+      </FormField>
 
-      <div className="form-actions">
+      <div>
+        <label className="checkbox-field" htmlFor={suppliesId}>
+          <input
+            id={suppliesId}
+            name="needsSupplies"
+            type="checkbox"
+            checked={draft.needsSupplies}
+            onChange={(event) => onChange('needsSupplies', event.target.checked)}
+            onBlur={() => onBlur('needsSupplies')}
+            aria-invalid={Boolean(errors.needsSupplies)}
+            aria-describedby={describedBy(suppliesId, errors.needsSupplies)}
+          />
+          Потрібна допомога з кормом чи ліками
+        </label>
+        <p id={`${suppliesId}-hint`} className="field-hint">
+          Для понад 4 візитів на тиждень позначка обов'язкова.
+        </p>
+        {errors.needsSupplies && (
+          <p id={`${suppliesId}-error`} className="field-error">
+            {errors.needsSupplies}
+          </p>
+        )}
+      </div>
+
+      <div className="form-actions" onMouseDown={keepFieldFocus}>
+        <AppButton type="submit">{submitLabel}</AppButton>
         <AppButton variant="secondary" onClick={onReset}>
-          Очистити поля
+          Відновити початкові поля
         </AppButton>
-        <AppButton disabled>Надсилання буде доступне пізніше</AppButton>
       </div>
     </form>
   )

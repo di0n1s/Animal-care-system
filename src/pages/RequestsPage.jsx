@@ -1,48 +1,57 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import AppButton from '../components/ui/AppButton.jsx'
+import CareRequestFilters from '../components/requests/CareRequestFilters.jsx'
+import CareRequestTable from '../components/requests/CareRequestTable.jsx'
+import useCareRequests from '../hooks/useCareRequests.js'
+import useCareRequestFilters from '../hooks/useCareRequestFilters.js'
+import useDeleteCareRequest from '../hooks/useDeleteCareRequest.js'
 
-export default function RequestsPage({ requests, items }) {
+export default function RequestsPage({ items }) {
+  const { requests } = useCareRequests()
+  const filters = useCareRequestFilters(requests, items)
+  const deleteWithConfirmation = useDeleteCareRequest(items)
+  const [error, setError] = useState('')
+
+  function handleDelete(request) {
+    setError('')
+    const result = deleteWithConfirmation(request)
+    if (!result.ok && !result.cancelled) setError(result.message)
+  }
+
   return (
     <>
       <PageHeading title="Заявки на догляд" />
-      <p>Нижче наведено локальні демонстраційні записи.</p>
+      <p><Link to="/requests/new">Створити заявку</Link></p>
+      <CareRequestFilters
+        query={filters.query}
+        supplies={filters.supplies}
+        sort={filters.sort}
+        onQueryChange={filters.setQuery}
+        onSuppliesChange={filters.setSupplies}
+        onSortChange={filters.setSort}
+        onReset={filters.resetFilters}
+      />
+      <p>Показано: {filters.visibleRequests.length} із {requests.length}</p>
+      {error && <p role="alert">{error}</p>}
       {requests.length === 0 ? (
         <EmptyState title="Заявок ще немає.">
-          <p><Link to="new">Підготувати нову заявку</Link></p>
+          <p><Link to="/animals">Виберіть тварину для першої заявки</Link></p>
+        </EmptyState>
+      ) : filters.visibleRequests.length === 0 ? (
+        <EmptyState title="За цими умовами нічого не знайдено.">
+          <AppButton variant="secondary" onClick={filters.resetFilters}>
+            Показати всі заявки
+          </AppButton>
         </EmptyState>
       ) : (
-        <div className="table-scroll">
-          <table className="requests-table">
-            <caption>Заявки для перевірки навігації</caption>
-            <thead>
-              <tr>
-                <th scope="col">Тварина</th>
-                <th scope="col">Графік догляду</th>
-                <th scope="col">Дія</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((request) => {
-                const item = items.find((entry) => (
-                  entry.id === request.animalId
-                ))
-
-                return (
-                  <tr key={request.id}>
-                    <td>{item?.name ?? 'Тварина відсутня в реєстрі'}</td>
-                    <td>{request.schedule}</td>
-                    <td>
-                      <Link to={`${encodeURIComponent(request.id)}/edit`}>
-                        Редагувати {request.id}
-                      </Link>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <CareRequestTable
+          requests={filters.visibleRequests}
+          items={items}
+          onDelete={handleDelete}
+        />
       )}
     </>
   )

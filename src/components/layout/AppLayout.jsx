@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router'
 import SiteHeader from './SiteHeader.jsx'
 import AnimalSelectionProvider from '../../providers/AnimalSelectionProvider.jsx'
+import CareRequestsProvider from '../../providers/CareRequestsProvider.jsx'
 
 const navigationLinks = [
   { to: '/', label: 'Головна', end: true },
@@ -15,7 +16,9 @@ export default function AppLayout({ items }) {
       <SiteHeader title="Система контролю та опіки тварин" links={navigationLinks} />
       <main id="main-content" tabIndex={-1}>
         <AnimalSelectionProvider items={items}>
-          <Outlet />
+          <CareRequestsProvider items={items}>
+            <Outlet />
+          </CareRequestsProvider>
         </AnimalSelectionProvider>
       </main>
       <footer>Навчальний проєкт. Реєстр тварин і заявки на догляд.</footer>
