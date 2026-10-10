@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import AppButton from '../components/ui/AppButton.jsx'
@@ -9,17 +9,32 @@ import NotFoundPage from './NotFoundPage.jsx'
 export default function CareRequestDetailsPage({ items }) {
   const { requestId } = useParams()
   const navigate = useNavigate()
-  const { requests } = useCareRequests()
+  const { requests, isMutating } = useCareRequests()
   const deleteWithConfirmation = useDeleteCareRequest(items)
   const [error, setError] = useState('')
+  const pageAlive = useRef(false)
+  const activeId = useRef(requestId)
+
+  useEffect(() => {
+    pageAlive.current = true
+    return () => { pageAlive.current = false }
+  }, [])
+
+  useEffect(() => {
+    activeId.current = requestId
+    return () => { activeId.current = null }
+  }, [requestId])
+
   const request = requests.find((entry) => entry.id === requestId)
 
   if (!request) return <NotFoundPage title="Заявку не знайдено" />
   const item = items.find((entry) => entry.id === request.animalId)
 
-  function handleDelete() {
+  async function handleDelete() {
+    if (isMutating) return
     setError('')
-    const result = deleteWithConfirmation(request)
+    const result = await deleteWithConfirmation(request)
+    if (!pageAlive.current || activeId.current !== request.id) return
     if (result.ok) navigate('/requests', { replace: true })
     else if (!result.cancelled) setError(result.message)
   }
@@ -44,9 +59,10 @@ export default function CareRequestDetailsPage({ items }) {
           Редагувати заявку
         </Link>
       </p>
-      <AppButton variant="secondary" onClick={handleDelete}>
+      <AppButton variant="secondary" disabled={isMutating} onClick={handleDelete}>
         Видалити заявку
       </AppButton>
+      <p role="status">{isMutating ? 'Опрацювання зміни…' : ''}</p>
       <p><Link to="/requests">До всіх заявок</Link></p>
     </>
   )

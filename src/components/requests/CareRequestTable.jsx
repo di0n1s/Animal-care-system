@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import AppButton from '../ui/AppButton.jsx'
 
-export default function CareRequestTable({ requests, items, onDelete }) {
+export default function CareRequestTable({ requests, items, onDelete, disabled = false }) {
   return (
     <div className="table-scroll">
       <table className="requests-table">
@@ -29,7 +29,7 @@ export default function CareRequestTable({ requests, items, onDelete }) {
                 <td>
                   <p><Link to={path}>Переглянути</Link></p>
                   <p><Link to={`${path}/edit`}>Редагувати</Link></p>
-                  <AppButton variant="secondary" onClick={() => onDelete(request)}>
+                  <AppButton variant="secondary" disabled={disabled} onClick={() => onDelete(request)}>
                     Видалити
                   </AppButton>
                 </td>

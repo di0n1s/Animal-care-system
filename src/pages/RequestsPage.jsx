@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
@@ -10,14 +10,21 @@ import useCareRequestFilters from '../hooks/useCareRequestFilters.js'
 import useDeleteCareRequest from '../hooks/useDeleteCareRequest.js'
 
 export default function RequestsPage({ items }) {
-  const { requests } = useCareRequests()
+  const { requests, reload, isMutating } = useCareRequests()
   const filters = useCareRequestFilters(requests, items)
   const deleteWithConfirmation = useDeleteCareRequest(items)
   const [error, setError] = useState('')
+  const pageAlive = useRef(false)
 
-  function handleDelete(request) {
+  useEffect(() => {
+    pageAlive.current = true
+    return () => { pageAlive.current = false }
+  }, [])
+
+  async function handleDelete(request) {
     setError('')
-    const result = deleteWithConfirmation(request)
+    const result = await deleteWithConfirmation(request)
+    if (!pageAlive.current) return
     if (!result.ok && !result.cancelled) setError(result.message)
   }
 
@@ -34,11 +41,18 @@ export default function RequestsPage({ items }) {
         onSortChange={filters.setSort}
         onReset={filters.resetFilters}
       />
+      <AppButton variant="secondary" disabled={isMutating} onClick={() => void reload()}>
+        Оновити дані
+      </AppButton>
+      <p role="status">{isMutating ? 'Опрацювання зміни…' : ''}</p>
       <p>Показано: {filters.visibleRequests.length} із {requests.length}</p>
       {error && <p role="alert">{error}</p>}
       {requests.length === 0 ? (
         <EmptyState title="Заявок ще немає.">
-          <p><Link to="/animals">Виберіть тварину для першої заявки</Link></p>
+          <p>
+            Виберіть тварину в реєстрі та створіть першу заявку.{' '}
+            <Link to="/animals">Відкрити реєстр тварин</Link>
+          </p>
         </EmptyState>
       ) : filters.visibleRequests.length === 0 ? (
         <EmptyState title="За цими умовами нічого не знайдено.">
@@ -51,6 +65,7 @@ export default function RequestsPage({ items }) {
           requests={filters.visibleRequests}
           items={items}
           onDelete={handleDelete}
+          disabled={isMutating}
         />
       )}
     </>

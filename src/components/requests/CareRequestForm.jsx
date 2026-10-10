@@ -12,6 +12,7 @@ export default function CareRequestForm({
   onSubmit,
   onReset,
   submitLabel,
+  isSubmitting,
 }) {
   const scheduleId = `${idPrefix}-schedule`
   const visitsId = `${idPrefix}-visits`
@@ -29,7 +30,14 @@ export default function CareRequestForm({
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} aria-label="Форма заявки на догляд">
+    <form
+      noValidate
+      onSubmit={onSubmit}
+      aria-label="Форма заявки на догляд"
+      aria-busy={isSubmitting}
+    >
+      <fieldset disabled={isSubmitting}>
+      <legend>Дані заявки</legend>
       <p>Тварина: {animalName}</p>
       <p>
         Збережіть зміни кнопкою нижче. Незбережене введення зникає
@@ -105,11 +113,15 @@ export default function CareRequestForm({
       </div>
 
       <div className="form-actions" onMouseDown={keepFieldFocus}>
-        <AppButton type="submit">{submitLabel}</AppButton>
-        <AppButton variant="secondary" onClick={onReset}>
+        <AppButton type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Збереження…' : submitLabel}
+        </AppButton>
+        <AppButton variant="secondary" disabled={isSubmitting} onClick={onReset}>
           Відновити початкові поля
         </AppButton>
       </div>
+      </fieldset>
+      <p role="status">{isSubmitting ? 'Збереження заявки…' : ''}</p>
     </form>
   )
 }

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router'
 import CareRequestNotice from '../requests/CareRequestNotice.jsx'
+import CareRequestsGate from '../requests/CareRequestsGate.jsx'
 
 export default function RequestsLayout() {
   return (
@@ -10,9 +11,14 @@ export default function RequestsLayout() {
           <li><NavLink to="new">Нова заявка</NavLink></li>
         </ul>
       </nav>
-      <p>Локальні дані зберігаються до перезавантаження сторінки.</p>
+      <p>
+        Заявки зберігаються в локальному сховищі цього браузера
+        (режим mock) і переживають перезавантаження.
+      </p>
       <CareRequestNotice />
-      <Outlet />
+      <CareRequestsGate>
+        <Outlet />
+      </CareRequestsGate>
     </>
   )
 }

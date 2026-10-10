@@ -142,3 +142,7 @@ select:focus-visible { outline: 3px solid #075a94; outline-offset: 3px; }
 .operation-notice p:empty { margin: 0; }
 .operation-notice { margin-block: 1rem; }
 .requests-table td, main h1 { overflow-wrap: anywhere; }
+
+.dev-controls { margin-block: 1rem; padding: 0.5rem 1rem; border: 1px dashed #687d8d; border-radius: 0.5rem; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { font-weight: 600; padding: 0; }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import Section from '../components/ui/Section.jsx'
 import AppButton from '../components/ui/AppButton.jsx'
@@ -28,6 +28,9 @@ export default function CareRequestPage({
   const [touched, setTouched] = useState({})
   const [attempted, setAttempted] = useState(false)
   const [operationError, setOperationError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitting = useRef(false)
+  const alive = useRef(false)
   const validation = validateCareRequest({ ...draft, animalId: item.id }, [item])
   const errors = Object.fromEntries(
     Object.entries(validation.errors).filter(([field]) => (
@@ -38,6 +41,11 @@ export default function CareRequestPage({
     || draft.visitsPerWeek !== initialValues.visitsPerWeek
     || draft.needsSupplies !== initialValues.needsSupplies
 
+  useEffect(() => {
+    alive.current = true
+    return () => { alive.current = false }
+  }, [])
+
   function handleChange(field, value) {
     setDraft((previous) => ({ ...previous, [field]: value }))
     setOperationError('')
@@ -47,8 +55,9 @@ export default function CareRequestPage({
     setTouched((previous) => ({ ...previous, [field]: true }))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
+    if (submitting.current) return
     setAttempted(true)
     setOperationError('')
     if (!validation.ok) {
@@ -57,13 +66,27 @@ export default function CareRequestPage({
       return
     }
 
-    const result = onSave(validation.value)
-    if (!result.ok) {
-      setOperationError(result.message || Object.values(result.errors).join(' '))
+    submitting.current = true
+    setIsSubmitting(true)
+    try {
+      const result = await onSave(validation.value)
+      if (!result.ok && alive.current) {
+        setOperationError(
+          result.errors
+            ? Object.values(result.errors).join(' ')
+            : result.message || 'Не вдалося зберегти заявку.',
+        )
+      }
+    } catch {
+      if (alive.current) setOperationError('Не вдалося завершити збереження.')
+    } finally {
+      submitting.current = false
+      if (alive.current) setIsSubmitting(false)
     }
   }
 
   function handleReset() {
+    if (submitting.current) return
     if (!isDirty) return
     if (!window.confirm('Відкинути введені зміни та відновити початкові поля?')) {
       return
@@ -75,6 +98,7 @@ export default function CareRequestPage({
   }
 
   function handleCancel() {
+    if (submitting.current) return
     if (isDirty && !window.confirm('Вийти та відкинути незбережені зміни?')) return
     onCancel()
   }
@@ -98,10 +122,11 @@ export default function CareRequestPage({
           onSubmit={handleSubmit}
           onReset={handleReset}
           submitLabel={submitLabel}
+          isSubmitting={isSubmitting}
         />
         <CareRequestSummary animalName={item.name} draft={draft} />
       </Section>
-      <AppButton variant="secondary" onClick={handleCancel}>
+      <AppButton variant="secondary" disabled={isSubmitting} onClick={handleCancel}>
         {cancelLabel}
       </AppButton>
     </>

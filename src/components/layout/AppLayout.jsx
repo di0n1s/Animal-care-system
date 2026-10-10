@@ -16,7 +16,7 @@ export default function AppLayout({ items }) {
       <SiteHeader title="Система контролю та опіки тварин" links={navigationLinks} />
       <main id="main-content" tabIndex={-1}>
         <AnimalSelectionProvider items={items}>
-          <CareRequestsProvider items={items}>
+          <CareRequestsProvider>
             <Outlet />
           </CareRequestsProvider>
         </AnimalSelectionProvider>

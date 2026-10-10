@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
@@ -12,6 +13,12 @@ export default function CareRequestCreatePage({ items }) {
   const { selectedId, clearSelection } = useAnimalSelection()
   const { createRequest } = useCareRequests()
   const animalId = searchParams.get('animalId')
+  const pageAlive = useRef(false)
+
+  useEffect(() => {
+    pageAlive.current = true
+    return () => { pageAlive.current = false }
+  }, [])
 
   if (animalId === null) {
     const lastSelectionSearch = selectedId
@@ -44,9 +51,9 @@ export default function CareRequestCreatePage({ items }) {
     )
   }
 
-  function handleSave(input) {
-    const result = createRequest(input)
-    if (result.ok) {
+  async function handleSave(input) {
+    const result = await createRequest(input)
+    if (result.ok && pageAlive.current) {
       navigate(`/requests/${encodeURIComponent(result.record.id)}`, {
         replace: true,
       })
