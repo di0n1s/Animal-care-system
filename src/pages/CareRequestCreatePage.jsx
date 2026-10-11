@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import useAnimalSelection from '../hooks/useAnimalSelection.js'
 import useCareRequests from '../hooks/useCareRequests.js'
+import useMountedRef from '../hooks/useMountedRef.js'
 import CareRequestPage from './CareRequestPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
@@ -13,12 +13,8 @@ export default function CareRequestCreatePage({ items }) {
   const { selectedId, clearSelection } = useAnimalSelection()
   const { createRequest } = useCareRequests()
   const animalId = searchParams.get('animalId')
-  const pageAlive = useRef(false)
+  const pageAlive = useMountedRef()
 
-  useEffect(() => {
-    pageAlive.current = true
-    return () => { pageAlive.current = false }
-  }, [])
 
   if (animalId === null) {
     const lastSelectionSearch = selectedId

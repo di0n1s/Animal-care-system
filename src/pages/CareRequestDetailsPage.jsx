@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import AppButton from '../components/ui/AppButton.jsx'
 import useCareRequests from '../hooks/useCareRequests.js'
+import useMountedRef from '../hooks/useMountedRef.js'
 import useDeleteCareRequest from '../hooks/useDeleteCareRequest.js'
 import NotFoundPage from './NotFoundPage.jsx'
 
@@ -12,13 +13,9 @@ export default function CareRequestDetailsPage({ items }) {
   const { requests, isMutating } = useCareRequests()
   const deleteWithConfirmation = useDeleteCareRequest(items)
   const [error, setError] = useState('')
-  const pageAlive = useRef(false)
+  const pageAlive = useMountedRef()
   const activeId = useRef(requestId)
 
-  useEffect(() => {
-    pageAlive.current = true
-    return () => { pageAlive.current = false }
-  }, [])
 
   useEffect(() => {
     activeId.current = requestId

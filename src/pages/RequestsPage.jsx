@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
@@ -6,6 +6,7 @@ import AppButton from '../components/ui/AppButton.jsx'
 import CareRequestFilters from '../components/requests/CareRequestFilters.jsx'
 import CareRequestTable from '../components/requests/CareRequestTable.jsx'
 import useCareRequests from '../hooks/useCareRequests.js'
+import useMountedRef from '../hooks/useMountedRef.js'
 import useCareRequestFilters from '../hooks/useCareRequestFilters.js'
 import useDeleteCareRequest from '../hooks/useDeleteCareRequest.js'
 
@@ -14,12 +15,8 @@ export default function RequestsPage({ items }) {
   const filters = useCareRequestFilters(requests, items)
   const deleteWithConfirmation = useDeleteCareRequest(items)
   const [error, setError] = useState('')
-  const pageAlive = useRef(false)
+  const pageAlive = useMountedRef()
 
-  useEffect(() => {
-    pageAlive.current = true
-    return () => { pageAlive.current = false }
-  }, [])
 
   async function handleDelete(request) {
     setError('')

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import useCareRequests from '../hooks/useCareRequests.js'
+import useMountedRef from '../hooks/useMountedRef.js'
 import CareRequestPage from './CareRequestPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
@@ -8,13 +9,9 @@ export default function CareRequestEditPage({ items }) {
   const { requestId } = useParams()
   const navigate = useNavigate()
   const { requests, updateRequest } = useCareRequests()
-  const pageAlive = useRef(false)
+  const pageAlive = useMountedRef()
   const activeId = useRef(requestId)
 
-  useEffect(() => {
-    pageAlive.current = true
-    return () => { pageAlive.current = false }
-  }, [])
 
   useEffect(() => {
     activeId.current = requestId

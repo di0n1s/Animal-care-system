@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import Section from '../components/ui/Section.jsx'
 import AppButton from '../components/ui/AppButton.jsx'
@@ -6,6 +6,7 @@ import CareStatusBadge from '../components/animals/CareStatusBadge.jsx'
 import CareRequestForm from '../components/requests/CareRequestForm.jsx'
 import CareRequestSummary from '../components/requests/CareRequestSummary.jsx'
 import { validateCareRequest } from '../domain/careRequestValidation.js'
+import useMountedRef from '../hooks/useMountedRef.js'
 
 const emptyDraft = { schedule: '', visitsPerWeek: '1', needsSupplies: false }
 const fieldOrder = ['schedule', 'visitsPerWeek', 'needsSupplies']
@@ -30,7 +31,7 @@ export default function CareRequestPage({
   const [operationError, setOperationError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submitting = useRef(false)
-  const alive = useRef(false)
+  const alive = useMountedRef()
   const validation = validateCareRequest({ ...draft, animalId: item.id }, [item])
   const errors = Object.fromEntries(
     Object.entries(validation.errors).filter(([field]) => (
@@ -40,11 +41,6 @@ export default function CareRequestPage({
   const isDirty = draft.schedule !== initialValues.schedule
     || draft.visitsPerWeek !== initialValues.visitsPerWeek
     || draft.needsSupplies !== initialValues.needsSupplies
-
-  useEffect(() => {
-    alive.current = true
-    return () => { alive.current = false }
-  }, [])
 
   function handleChange(field, value) {
     setDraft((previous) => ({ ...previous, [field]: value }))
