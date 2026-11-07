@@ -1,8 +1,7 @@
-import { animals } from '../data/animals.js'
 import { validateCareRequest } from '../domain/careRequestValidation.js'
 import { ServiceError } from './ServiceError.js'
 
-export function toCareRequestInput(input) {
+export function toCareRequestInput(input, animals) {
   const result = validateCareRequest(input, animals)
   if (!result.ok) {
     throw new ServiceError('Перевірте поля заявки.', {

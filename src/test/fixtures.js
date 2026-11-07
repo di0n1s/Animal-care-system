@@ -1,4 +1,6 @@
-import { animals } from '../data/animals.js'
+import animals from '../../public/mock-api/animals.json'
+
+export { animals }
 
 export const testItem = animals.find((item) => item.id === 'an-001')
 

@@ -1,8 +1,10 @@
-import { careRequests as initialRequests } from '../data/careRequests.js'
 import { ServiceError } from './ServiceError.js'
+import { animalService } from './animalService.js'
+import { fetchJson } from './fetchJson.js'
 import { toCareRequestInput, toCareRequestList } from './careRequestContract.js'
 
 const storageKey = 'animal-care.care-requests.v1'
+const seedUrl = `${import.meta.env.BASE_URL}mock-api/care-requests.json`
 const failures = new Set()
 
 export function failNextMockRequest(operation) {
@@ -40,10 +42,22 @@ async function before(operation, signal) {
   }
 }
 
-function read() {
+async function read(signal) {
+  let raw
   try {
-    const raw = localStorage.getItem(storageKey)
-    return toCareRequestList(raw === null ? initialRequests : JSON.parse(raw))
+    raw = localStorage.getItem(storageKey)
+  } catch {
+    throw new ServiceError('Не вдалося прочитати локальні дані.', {
+      code: 'STORAGE_READ',
+    })
+  }
+
+  if (raw === null) {
+    return toCareRequestList(await fetchJson(seedUrl, { signal }))
+  }
+
+  try {
+    return toCareRequestList(JSON.parse(raw))
   } catch (error) {
     if (error instanceof ServiceError) throw error
     throw new ServiceError('Не вдалося прочитати локальні дані.', {
@@ -73,27 +87,27 @@ function findRecord(records, id) {
 export const mockCareRequestService = {
   async getAll({ signal } = {}) {
     await before('getAll', signal)
-    return read()
+    return read(signal)
   },
 
   async getById(id, { signal } = {}) {
     await before('getById', signal)
-    return findRecord(read(), id)
+    return findRecord(await read(signal), id)
   },
 
   async create(input) {
-    const value = toCareRequestInput(input)
+    const value = toCareRequestInput(input, await animalService.getAll())
     await before('create')
-    const records = read()
+    const records = await read()
     const record = { ...value, id: `req-${crypto.randomUUID()}` }
     write([...records, record])
     return { ...record }
   },
 
   async update(id, input) {
-    const value = toCareRequestInput(input)
+    const value = toCareRequestInput(input, await animalService.getAll())
     await before('update')
-    const records = read()
+    const records = await read()
     findRecord(records, id)
     const record = { ...value, id }
     write(records.map((entry) => (entry.id === id ? record : entry)))
@@ -102,7 +116,7 @@ export const mockCareRequestService = {
 
   async delete(id) {
     await before('delete')
-    const records = read()
+    const records = await read()
     findRecord(records, id)
     write(records.filter((entry) => entry.id !== id))
   },

@@ -4,8 +4,9 @@ import { MemoryRouter, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import App from './App.jsx'
 import { careRequestService } from './services/careRequestService.js'
+import { animalService } from './services/animalService.js'
 import { ServiceError } from './services/ServiceError.js'
-import { savedRequest, validInput } from './test/fixtures.js'
+import { animals, savedRequest, validInput } from './test/fixtures.js'
 import { deferred } from './test/deferred.js'
 
 vi.mock('./services/careRequestService.js', () => ({
@@ -18,7 +19,13 @@ vi.mock('./services/careRequestService.js', () => ({
   },
 }))
 
+vi.mock('./services/animalService.js', () => ({
+  animalService: { getAll: vi.fn() },
+}))
+
 beforeEach(() => {
+  animalService.getAll.mockReset()
+  animalService.getAll.mockResolvedValue(animals)
   for (const method of Object.values(careRequestService)) method.mockReset()
   careRequestService.getAll.mockResolvedValue([{ ...savedRequest }])
   careRequestService.getById.mockResolvedValue({ ...savedRequest })
@@ -54,7 +61,7 @@ test('показує завантаження до отримання колек
   careRequestService.getAll.mockReturnValueOnce(pending.promise)
   renderApp()
 
-  expect(screen.getByText('Завантаження заявок…')).toBeInTheDocument()
+  expect(await screen.findByText('Завантаження заявок…')).toBeInTheDocument()
   expect(screen.queryByText(savedRequest.schedule)).not.toBeInTheDocument()
   expect(screen.queryByText(/Заявок ще немає/)).not.toBeInTheDocument()
 
@@ -262,4 +269,41 @@ test('після редагування список показує нові п�
   expect(within(table).getByText('Оновлений графік: двічі на тиждень увечері.'))
     .toBeInTheDocument()
   expect(within(table).queryByText(savedRequest.schedule)).not.toBeInTheDocument()
+})
+
+test('довідник тварин завантажується з JSON: до відповіді показано очікування', async () => {
+  const pending = deferred()
+  animalService.getAll.mockReset()
+  animalService.getAll.mockReturnValueOnce(pending.promise)
+  renderApp('/animals')
+
+  expect(screen.getByText('Завантаження реєстру тварин…')).toBeInTheDocument()
+  expect(screen.queryByText(animals[0].name)).not.toBeInTheDocument()
+
+  await act(async () => {
+    pending.resolve(animals)
+    await pending.promise
+  })
+
+  expect(await screen.findByText(animals[0].name)).toBeInTheDocument()
+  expect(screen.getByText(`Тварин у реєстрі: ${animals.length}`)).toBeInTheDocument()
+})
+
+test('помилка завантаження довідника показує повтор, а не порожній реєстр', async () => {
+  animalService.getAll.mockReset()
+  animalService.getAll
+    .mockRejectedValueOnce(new ServiceError('Не вдалося зв’язатися із джерелом даних.'))
+    .mockResolvedValueOnce(animals)
+  const user = renderApp('/animals')
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'Не вдалося зв’язатися із джерелом даних.',
+  )
+  expect(screen.queryByText(/Тварин у реєстрі/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Тварин ще не додано/)).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Спробувати ще раз' }))
+
+  expect(await screen.findByText(animals[0].name)).toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })

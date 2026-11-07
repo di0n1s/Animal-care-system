@@ -1,4 +1,5 @@
 import { ServiceError } from './ServiceError.js'
+import { animalService } from './animalService.js'
 import {
   toCareRequest,
   toCareRequestInput,
@@ -80,14 +81,14 @@ export function createApiCareRequestService(baseUrl) {
     async create(input) {
       return toCareRequest(await request('/care-requests', {
         method: 'POST',
-        body: toCareRequestInput(input),
+        body: toCareRequestInput(input, await animalService.getAll()),
       }))
     },
 
     async update(id, input) {
       const record = toCareRequest(await request(recordPath(id), {
         method: 'PUT',
-        body: toCareRequestInput(input),
+        body: toCareRequestInput(input, await animalService.getAll()),
       }))
       if (record.id !== id) {
         throw new ServiceError('Сервіс змінив ідентифікатор заявки.', {

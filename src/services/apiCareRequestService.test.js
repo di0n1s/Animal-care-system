@@ -1,6 +1,15 @@
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { createApiCareRequestService } from './apiCareRequestService.js'
-import { savedRequest, validInput } from '../test/fixtures.js'
+import { animalService } from './animalService.js'
+import { animals, savedRequest, validInput } from '../test/fixtures.js'
+
+vi.mock('./animalService.js', () => ({
+  animalService: { getAll: vi.fn() },
+}))
+
+beforeEach(() => {
+  animalService.getAll.mockResolvedValue(animals)
+})
 
 afterEach(() => {
   vi.unstubAllGlobals()
